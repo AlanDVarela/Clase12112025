@@ -7,10 +7,9 @@ jobs:
     container: mongo:6.0
 
     steps:
-      - name: Insertar y buscar documento
-        run: |
-          mongo --eval '
-            db = db.getSiblingDB("testdb");
+      - run: |
+          mongosh --eval '
+            const db = connect("mongodb://localhost:27017/testdb");
             db.alumnos.insertOne({alumno: "Alan", calificacion: 10});
             printjson(db.alumnos.find({alumno: "Alan"}).toArray());
           '
