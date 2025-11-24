@@ -1,0 +1,16 @@
+name: Insertar y buscar en Mongo
+
+on: push 
+jobs:
+  mongo-job:
+    runs-on: ubuntu-latest
+    container: mongo:6.0
+
+    steps:
+      - name: Insertar y buscar documento
+        run: |
+          mongo --eval '
+            db = db.getSiblingDB("testdb");
+            db.alumnos.insertOne({alumno: "Alan", calificacion: 10});
+            printjson(db.alumnos.find({alumno: "Alan"}).toArray());
+          '
