@@ -17,13 +17,25 @@ jobs:
       - run: |
           node -e "
             const { MongoClient } = require('mongodb');
-            const client = new MongoClient('mongodb://localhost:27017');
-            async function run() {
-              await client.connect();
+            async function waitAndConnect(uri, retries = 5, delay = 2000) {
+              for (let i = 0; i < retries; i++) {
+                try {
+                  const client = new MongoClient(uri);
+                  await client.connect();
+                  return client;
+                } catch (err) {
+                  console.log('Esperando Mongo... retry', i + 1);
+                  await new Promise(r => setTimeout(r, delay));
+                }
+              }
+              throw new Error('No se pudo conectar a Mongo');
+            }
+
+            (async () => {
+              const client = await waitAndConnect('mongodb://mongo:27017');
               const db = client.db('testdb');
               await db.collection('alumnos').insertOne({alumno:'Alan', calificacion:10});
               console.log(await db.collection('alumnos').find({alumno:'Alan'}).toArray());
               await client.close();
-            }
-            run().catch(console.error);
+            })();
           "
